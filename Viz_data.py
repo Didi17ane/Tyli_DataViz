@@ -236,10 +236,10 @@ else:
         print("Quantiles :\n", quantiles)
 
         
-        rev = round(data['rev_total_mois'].mean(), 0)
+        rev = round(data['rev_total_mois'].median(), 0)
         if np.isnan(rev):
             rev=0    
-        st.metric("Revenu moyen (FCFA)", f"{rev:,.0f}")
+        st.metric("Revenu median (FCFA)", f"{rev:,.0f}")
         
         st.markdown('<div class="metric-card">', unsafe_allow_html=True)
         bank = round(data['bancarise'].mean()*100, 1)
@@ -267,17 +267,7 @@ else:
         
         st.subheader(f"Analyse descriptive pour le groupe : {emploi_type}")
         a1, a2, a3= st.columns(3)
-        with a1:
-            st.write("**Effectifs par situation matrimoniale :**")
-            st.write(data['mstat'].value_counts())
-        with a2:
-            st.write("**Effectifs par statut de logement :**")
-            st.write(data['logem'].value_counts())
-        with a3:
-            st.write("**Taux d'assurance :**")
-            st.write(data['a_assurance'].mean())
-
-        
+       
         c1, c2= st.columns(2)
         with c1:
             # Pyramide des âges
@@ -289,26 +279,26 @@ else:
         with c2:
             # Zoom région: répartition des effectifs et indicateurs
             tab_region = data.groupby("region").agg(population=("region", "size"),
-                                                revenu_moy=("rev_total_mois","mean"),
+                                                revenu_median=("rev_total_mois","median"),
                                                 bank_moy=("bancarise","mean")).reset_index()
              
             st.subheader(":green[**Comparaison des régions - Population & Revenus**]")
             st.divider()
             fig, ax = plt.subplots()
-            tab_region.set_index("region")[["population", "revenu_moy"]].plot(kind="bar", ax=ax, secondary_y="rev_moy")
+            tab_region.set_index("region")[["population", "revenu_median"]].plot(kind="bar", ax=ax, secondary_y="rev_median")
     
             st.pyplot(fig)
                 
         # Groupes d’âge : population et revenu médian
-        st.subheader(":green[**Effectifs & revenu moyen par âge**]")
+        st.subheader(":green[**Effectifs & revenu median par âge**]")
             
-        age_grp = data.groupby("age_grp").agg(population=("region", "size"), revenu_moy=("rev_total_mois","mean")).reset_index()
+        age_grp = data.groupby("age_grp").agg(population=("region", "size"), revenu_median=("rev_total_mois","median")).reset_index()
         st.dataframe(age_grp)
     
         ca1, ca2, ca3 = st.columns(3)
         with ca1:
 
-            # Calcul du revenu moyen par catégorie branch
+            # Calcul du revenu median par catégorie branch
                 
             
             branch_rev = data.groupby("branch")["rev_total_mois"].mean().reset_index()
@@ -317,8 +307,8 @@ else:
             st.subheader(":green[**Branche d'activité**]")
             st.divider()
             fig_branch = px.bar(branch_rev, x="branch", y="rev_total_mois",
-                                labels={"branch": "Branche", "rev_total_mois": "Revenu moyen (FCFA)"},
-                                title="Revenu moyen par branche")
+                                labels={"branch": "Branche", "rev_total_mois": "Revenu median (FCFA)"},
+                                title="Revenu median par branche")
             st.plotly_chart(fig_branch, use_container_width=True)
 
 
@@ -351,16 +341,16 @@ else:
             
         with ca2:
            
-            # Calcul du revenu moyen par catégorie csp
+            # Calcul du revenu median par catégorie csp
             
-            csp_rev = data.groupby("csp")["rev_total_mois"].mean().reset_index()
+            csp_rev = data.groupby("csp")["rev_total_mois"].median().reset_index()
             csp_rev['rev_total_mois'] = csp_rev['rev_total_mois'].round(0)
             
             st.subheader(":green[**Catégorie socioprofessionnelle (CSP)**]")
             st.divider()
             fig_csp = px.bar(csp_rev, x="csp", y="rev_total_mois",
-                             labels={"csp": "Catégorie socioprofessionnelle", "rev_total_mois": "Revenu moyen (FCFA)"},
-                             title="Revenu moyen par CSP")
+                             labels={"csp": "Catégorie socioprofessionnelle", "rev_total_mois": "Revenu median (FCFA)"},
+                             title="Revenu median par CSP")
             st.plotly_chart(fig_csp, use_container_width=True)
 
             #Catégorie socioprofessionnelle
@@ -391,15 +381,15 @@ else:
             st.pyplot(fig)
 
         with ca3:
-             # Calcul du revenu moyen par secteur
-            sectins_rev = data.groupby("sectins")["rev_total_mois"].mean().reset_index()
+             # Calcul du revenu median par secteur
+            sectins_rev = data.groupby("sectins")["rev_total_mois"].median().reset_index()
             sectins_rev['rev_total_mois'] = sectins_rev['rev_total_mois'].round(0)
             print(f"sectins_rev : {sectins_rev}")
             st.subheader(":green[**Secteur institutionnel**]")
             st.divider()
             fig_sectin = px.bar(sectins_rev, x="sectins", y="rev_total_mois",
-                                labels={"sectins": "Secteur", "rev_total_mois": "Revenu moyen (FCFA)"},
-                                title="Revenu moyen par Secteur institutionnel")
+                                labels={"sectins": "Secteur", "rev_total_mois": "Revenu median (FCFA)"},
+                                title="Revenu median par Secteur institutionnel")
             st.plotly_chart(fig_sectin, use_container_width=True)
 
             
@@ -418,21 +408,21 @@ else:
             
             st.dataframe(tab_region)
         with c_2:
-            # Visualisation du revenu moyen par statut marital et tranche d'âge
-            st.subheader(":green[**Revenu moyen par tranche d'âge et statut matrimonial**]")
+            # Visualisation du revenu median par statut marital et tranche d'âge
+            st.subheader(":green[**Revenu median par tranche d'âge et statut matrimonial**]")
             st.divider()
             
             rev_grouped = data.groupby(["age_grp", "mstat"]).agg(
-    rev_moy=('rev_total_mois', 'mean'),
+    rev_median=('rev_total_mois', 'median'),
     banc_moy=('bancarise', 'mean')
 ).reset_index()
-            rev_grouped['rev_moy'] = rev_grouped['rev_moy'].round(0)
-            # Graphique des revenus moyens en barres
+            rev_grouped['rev_median'] = rev_grouped['rev_median'].round(0)
+            # Graphique des revenus median en barres
             bars = alt.Chart(rev_grouped).mark_bar().encode(
                 x=alt.X('age_grp:N', title="Tranche d'âge"),
-                y=alt.Y('rev_moy:Q', title='Revenu moyen (FCFA)'),
+                y=alt.Y('rev_median:Q', title='Revenu median (FCFA)'),
                 color='mstat:N',
-                tooltip=['age_grp', 'mstat', alt.Tooltip('rev_moy', format=',.2f')]
+                tooltip=['age_grp', 'mstat', alt.Tooltip('rev_median', format=',.2f')]
             )
             
             # Graphique en ligne du taux de bancarisation (%)
@@ -447,7 +437,7 @@ else:
             combined = alt.layer(bars, line).resolve_scale(
                 y='independent'  
             ).properties(
-                title="Revenu moyen et taux de bancarisation par tranche d'âge et statut matrimonial",
+                title="Revenu median et taux de bancarisation par tranche d'âge et statut matrimonial",
                 width=700
             )
             
@@ -455,44 +445,19 @@ else:
             
         c1, c2 = st.columns(2)
         with c1:
-            # Revenu moyen par tranche d’âge
-            st.subheader(":green[**Revenu moyen par tranche d’âge**]")
+            # Revenu median par tranche d’âge
+            st.subheader(":green[**Revenu median par tranche d’âge**]")
             st.divider()
     
-            # Revenu moyen par tranche d’âge
+            # Revenu median par tranche d’âge
             fig, ax = plt.subplots()
             data.groupby("age_grp")["rev_total_mois"].median().plot(kind="bar", ax=ax, color="skyblue")
             data = data[data["rev_total_mois"] != 0]
-            ax.set_ylabel("Revenu moyen (FCFA)")
+            ax.set_ylabel("Revenu median (FCFA)")
     
             st.pyplot(fig)
     
         with c2:
-            
-            # _____________________________________________________________________________________
-
-            csp_rev = data.groupby("csp")["rev_total_mois"].median().reset_index()
-            csp_rev['rev_total_mois'] = csp_rev['rev_total_mois'].round(0)
-            
-            # _____________________________________________________________________________________
-            data = data[data["rev_total_mois"] != 0]
-            # _____________________________________________________________________________________
-            
-            st.subheader(":green[**Catégorie socioprofessionnelle (CSP)**]")
-            st.divider()
-            fig_csp = px.bar(csp_rev, x="csp", y="rev_total_mois",
-                             labels={"csp": "Catégorie socioprofessionnelle", "rev_total_mois": "Revenu median (FCFA)"},
-                             title="Revenu median par CSP")
-            st.plotly_chart(fig_csp, use_container_width=True)
-
-
-
-
-
-
-            # _____________________________________________________________________________________
-
-
             
             st.subheader(":green[**📈 Répartition Taux bancarisation**]")
             st.divider()
